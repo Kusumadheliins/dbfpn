@@ -45,17 +45,39 @@ export default async function UserProfile({ params }: { params: { username: stri
     const badges = ["Anggota"]
     if (user.role === 'admin') badges.push("Admin")
 
-    // Fetch all ratings for stats
-    const allRatings = await prisma.review.findMany({
-        where: { userId: user.id },
-        select: { rating: true }
+    // Fetch movies submitted by user to calculate rating stats
+    // Only include approved movies
+    const submittedMovies = await prisma.movie.findMany({
+        where: {
+            submitterId: user.id,
+            status: 'approved'
+        },
+        include: {
+            reviews: {
+                select: { rating: true }
+            }
+        }
     })
 
-    const ratingStats: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0 }
-    allRatings.forEach(r => {
-        if (ratingStats[r.rating] !== undefined) ratingStats[r.rating]++
+    const ratingStats: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+    let totalRatings = 0
+
+    submittedMovies.forEach(movie => {
+        movie.reviews.forEach(review => {
+            // Normalize rating: If > 5, assume it's old 1-10 scale and convert to 1-5
+            let rating = review.rating
+            if (rating > 5) {
+                rating = Math.ceil(rating / 2)
+            }
+            // Ensure it's within 1-5
+            rating = Math.min(Math.max(Math.round(rating), 1), 5)
+
+            if (ratingStats[rating] !== undefined) {
+                ratingStats[rating]++
+                totalRatings++
+            }
+        })
     })
-    const totalRatings = allRatings.length
 
     return (
         <div className="min-h-screen bg-black text-white font-sans selection:bg-primary selection:text-black flex flex-col">

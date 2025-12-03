@@ -4,17 +4,21 @@ import { useState, useEffect, useRef } from "react"
 import { Star, X } from "lucide-react"
 import { useToast } from "../ui/Toast"
 
+import { submitReview } from "@/app/actions/review"
+
 interface ReviewModalProps {
     isOpen: boolean
     onClose: () => void
+    movieId: number
     movieTitle: string
     initialRating?: number
 }
 
-export default function ReviewModal({ isOpen, onClose, movieTitle, initialRating = 0 }: ReviewModalProps) {
+export default function ReviewModal({ isOpen, onClose, movieId, movieTitle, initialRating = 0 }: ReviewModalProps) {
     const [rating, setRating] = useState(initialRating)
     const [hoverRating, setHoverRating] = useState(0)
     const [review, setReview] = useState("")
+    const [isSubmitting, setIsSubmitting] = useState(false)
     const modalRef = useRef<HTMLDivElement>(null)
     const { showToast } = useToast()
 
@@ -38,11 +42,21 @@ export default function ReviewModal({ isOpen, onClose, movieTitle, initialRating
 
     if (!isOpen) return null
 
-    const handleSubmit = () => {
-        // Handle submission logic here
-        console.log({ rating, review })
-        showToast("Ulasan berhasil dikirim!", "success")
-        onClose()
+    const handleSubmit = async () => {
+        setIsSubmitting(true)
+        try {
+            const result = await submitReview(movieId, rating, review)
+            if (result.success) {
+                showToast("Ulasan berhasil dikirim!", "success")
+                onClose()
+            } else {
+                showToast(result.error || "Gagal mengirim ulasan", "error")
+            }
+        } catch (error) {
+            showToast("Terjadi kesalahan", "error")
+        } finally {
+            setIsSubmitting(false)
+        }
     }
 
     return (
@@ -66,7 +80,7 @@ export default function ReviewModal({ isOpen, onClose, movieTitle, initialRating
 
                     {/* Star Rating */}
                     <div className="flex justify-center gap-2 mb-8">
-                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((star) => (
+                        {[1, 2, 3, 4, 5].map((star) => (
                             <button
                                 key={star}
                                 type="button"
@@ -89,7 +103,7 @@ export default function ReviewModal({ isOpen, onClose, movieTitle, initialRating
                     {/* Rating Value Display */}
                     <div className="text-center mb-6">
                         <span className="text-3xl font-bold text-white">{(hoverRating || rating)}</span>
-                        <span className="text-gray-500 text-lg">/10</span>
+                        <span className="text-gray-500 text-lg">/5</span>
                     </div>
 
                     {/* Review Textarea */}
@@ -113,10 +127,10 @@ export default function ReviewModal({ isOpen, onClose, movieTitle, initialRating
                         </button>
                         <button
                             onClick={handleSubmit}
-                            disabled={rating === 0}
+                            disabled={rating === 0 || isSubmitting}
                             className="flex-1 px-4 py-3 rounded-xl bg-primary text-black font-bold hover:bg-yellow-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            Kirim Ulasan
+                            {isSubmitting ? "Mengirim..." : "Kirim Ulasan"}
                         </button>
                     </div>
                 </div>

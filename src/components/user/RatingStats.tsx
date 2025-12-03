@@ -26,7 +26,7 @@ import Image from "next/image"
 export default function RatingStats({ ratingStats, totalRatings }: { ratingStats: Record<number, number>, totalRatings: number }) {
     const [isExpanded, setIsExpanded] = useState(false)
 
-    const scoresToShow = isExpanded ? [10, 9, 8, 7, 6, 5, 4, 3, 2, 1] : [10, 9, 8, 7]
+    const scoresToShow = isExpanded ? [5, 4, 3, 2, 1] : [5, 4, 3, 2, 1]
 
     return (
         <div className="bg-[#1a1a1a] p-6 rounded-xl border border-gray-800 sticky top-24">
@@ -49,16 +49,7 @@ export default function RatingStats({ ratingStats, totalRatings }: { ratingStats
                 ))}
             </div>
 
-            <button
-                onClick={() => setIsExpanded(!isExpanded)}
-                className="w-full mt-4 flex items-center justify-center gap-1 text-sm text-primary hover:text-white transition-colors"
-            >
-                {isExpanded ? (
-                    <>Sembunyikan <ChevronUp size={16} /></>
-                ) : (
-                    <>Tampilkan Semua <ChevronDown size={16} /></>
-                )}
-            </button>
+
         </div>
     )
 }

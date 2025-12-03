@@ -105,7 +105,7 @@ export default async function UserDashboard() {
                                     </div>
                                     <div>
                                         <p className="text-white">
-                                            Anda memberikan rating <span className="font-bold text-yellow-500">{review.rating}/10</span> untuk film <Link href={`/movie/${review.movie.slug}`} className="text-primary hover:underline">{review.movie.title}</Link>
+                                            Anda memberikan rating <span className="font-bold text-yellow-500">{review.rating}/5</span> untuk film <Link href={`/movie/${review.movie.slug}`} className="text-primary hover:underline">{review.movie.title}</Link>
                                         </p>
                                         <p className="text-gray-500 text-sm mt-1">{new Date(review.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
                                         {review.content && (

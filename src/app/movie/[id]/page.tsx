@@ -31,6 +31,11 @@ export default async function MovieDetail({ params }: { params: Promise<{ id: st
                 include: {
                     genre: true
                 }
+            },
+            reviews: {
+                select: {
+                    rating: true
+                }
             }
         }
     })
@@ -38,6 +43,10 @@ export default async function MovieDetail({ params }: { params: Promise<{ id: st
     if (!movie) {
         notFound()
     }
+
+    // Calculate average rating
+    const totalRating = movie.reviews.reduce((sum, review) => sum + review.rating, 0)
+    const averageRating = movie.reviews.length > 0 ? totalRating / movie.reviews.length : 0
 
     // Transform data for MovieHeader
     const director = movie.people.find(p => p.role === "director")?.person
@@ -56,9 +65,10 @@ export default async function MovieDetail({ params }: { params: Promise<{ id: st
     return (
         <div className="pb-12">
             <MovieHeader
+                id={movie.id}
                 title={movie.title}
                 year={movie.releaseDate ? new Date(movie.releaseDate).getFullYear().toString() : "TBA"}
-                rating={4.5} // TODO: Calculate from reviews
+                rating={Number(averageRating.toFixed(1))}
                 posterUrl={movie.posterUrl}
                 bannerUrl={movie.bannerUrl}
                 trailerUrl={movie.trailerUrl}

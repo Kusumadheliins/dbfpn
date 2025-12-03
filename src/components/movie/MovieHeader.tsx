@@ -7,6 +7,7 @@ import { Play, Star, User } from "lucide-react"
 import ReviewModal from "./ReviewModal"
 
 interface MovieHeaderProps {
+    id: number
     title: string
     year: string
     rating: number
@@ -78,6 +79,7 @@ function CastList({ cast }: { cast: { name: string; role: string; userId?: numbe
 }
 
 export default function MovieHeader({
+    id,
     title,
     year,
     rating: initialRating,
@@ -149,6 +151,7 @@ export default function MovieHeader({
                         <ReviewModal
                             isOpen={isReviewModalOpen}
                             onClose={() => setIsReviewModalOpen(false)}
+                            movieId={id}
                             movieTitle={title}
                             initialRating={Math.floor(rating)}
                         />
