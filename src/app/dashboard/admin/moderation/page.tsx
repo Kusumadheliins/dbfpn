@@ -1,8 +1,8 @@
-import Link from "next/link"
 import { redirect } from "next/navigation"
 import prisma from "@/lib/prisma"
 import { auth } from "@/auth"
-import { ShieldAlert, Users, Clock, Flag, ChevronRight } from "lucide-react"
+import { ShieldAlert, Users, Clock, Flag } from "lucide-react"
+import ReportDetailButton from "@/components/admin/ReportDetailButton"
 
 type Row = {
   user: {
@@ -37,7 +37,7 @@ export default async function AdminModerationPage() {
     prisma.report.findFirst({
       where: { targetType: "user", status: "pending" },
       orderBy: { createdAt: "asc" },
-      select: { createdAt: true, targetId: true },
+      select: { createdAt: true },
     }),
   ])
 
@@ -151,7 +151,10 @@ export default async function AdminModerationPage() {
                       const username = u?.username || u?.email?.split("@")[0] || `User#${u?.id ?? "?"}`
 
                       return (
-                        <tr key={u?.id ?? `missing-${r.count}-${String(r.lastAt)}`} className="border-b border-gray-800">
+                        <tr
+                          key={u?.id ?? `missing-${r.count}-${String(r.lastAt)}`}
+                          className="border-b border-gray-800"
+                        >
                           <td className="py-4 pr-4">
                             {u ? (
                               <div className="flex items-center gap-3">
@@ -161,6 +164,7 @@ export default async function AdminModerationPage() {
                                 <div>
                                   <div className="font-bold text-white leading-tight">{username}</div>
                                   <div className="text-gray-500 text-xs leading-tight">{u.email}</div>
+
                                   <div className="mt-2 flex gap-2">
                                     <span
                                       className={`px-2 py-0.5 rounded-full text-xs font-bold border ${
@@ -171,6 +175,7 @@ export default async function AdminModerationPage() {
                                     >
                                       {u.status}
                                     </span>
+
                                     {u.role === "admin" && (
                                       <span className="px-2 py-0.5 rounded-full text-xs font-bold border bg-primary/10 text-primary border-primary/20">
                                         admin
@@ -205,13 +210,7 @@ export default async function AdminModerationPage() {
 
                           <td className="py-4 pr-0">
                             {u ? (
-                              <Link
-                                href={`/dashboard/admin/moderation?userId=${u.id}`}
-                                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-[#252525] hover:bg-[#333] border border-gray-700 text-white"
-                                title="Detail (poin 5)"
-                              >
-                                Detail <ChevronRight size={16} />
-                              </Link>
+                              <ReportDetailButton userId={u.id} username={username} />
                             ) : (
                               <span className="text-gray-500">-</span>
                             )}
@@ -226,8 +225,7 @@ export default async function AdminModerationPage() {
           </div>
         </div>
 
-        <div className="text-gray-600 text-xs mt-6">
-        </div>
+        <div className="text-gray-600 text-xs mt-6"></div>
       </div>
     </div>
   )
