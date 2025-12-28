@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma"
 import { auth } from "@/auth"
 import { ShieldAlert, Users, Clock, Flag } from "lucide-react"
 import ReportDetailButton from "@/components/admin/ReportDetailButton"
+import ModerationActions from "@/components/admin/ModerationActions"
 
 type Row = {
   user: {
@@ -145,10 +146,12 @@ export default async function AdminModerationPage() {
                       <th className="text-left py-3 pr-0">Aksi</th>
                     </tr>
                   </thead>
+
                   <tbody>
                     {rows.map((r) => {
                       const u = r.user
-                      const username = u?.username || u?.email?.split("@")[0] || `User#${u?.id ?? "?"}`
+                      const username =
+                        u?.username || u?.email?.split("@")[0] || (u?.id ? `User#${u.id}` : "Unknown")
 
                       return (
                         <tr
@@ -161,6 +164,7 @@ export default async function AdminModerationPage() {
                                 <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center font-bold text-gray-300 uppercase">
                                   {username.charAt(0)}
                                 </div>
+
                                 <div>
                                   <div className="font-bold text-white leading-tight">{username}</div>
                                   <div className="text-gray-500 text-xs leading-tight">{u.email}</div>
@@ -185,7 +189,9 @@ export default async function AdminModerationPage() {
                                 </div>
                               </div>
                             ) : (
-                              <span className="text-gray-500 italic">User tidak ditemukan (mungkin sudah dihapus)</span>
+                              <span className="text-gray-500 italic">
+                                User tidak ditemukan (mungkin sudah dihapus)
+                              </span>
                             )}
                           </td>
 
@@ -210,7 +216,15 @@ export default async function AdminModerationPage() {
 
                           <td className="py-4 pr-0">
                             {u ? (
-                              <ReportDetailButton userId={u.id} username={username} />
+                              <div className="flex flex-wrap items-center gap-2">
+                                <ReportDetailButton userId={u.id} username={username} />
+
+                                <ModerationActions
+                                  userId={u.id}
+                                  username={username}
+                                  disabled={u.role === "admin"}
+                                />
+                              </div>
                             ) : (
                               <span className="text-gray-500">-</span>
                             )}
