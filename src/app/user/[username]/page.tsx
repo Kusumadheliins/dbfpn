@@ -12,7 +12,7 @@ export default async function UserProfile({ params }: { params: { username: stri
   const viewerIdRaw = (session?.user as any)?.id
   const viewerId = Number.isFinite(Number(viewerIdRaw)) ? Number(viewerIdRaw) : null
 
-  // Jangan ngandelin session.role, sering kosong. Ambil dari DB biar waras.
+  // ambil role viewer dari DB, jangan percaya session
   let isAdminViewer = false
   if (viewerId) {
     const viewer = await prisma.user.findUnique({
@@ -52,7 +52,11 @@ export default async function UserProfile({ params }: { params: { username: stri
 
   if (!user) notFound()
 
-  const joinDate = new Date(user.createdAt).toLocaleDateString("id-ID", { month: "long", year: "numeric" })
+  const joinDate = new Date(user.createdAt).toLocaleDateString("id-ID", {
+    month: "long",
+    year: "numeric",
+  })
+
   const displayName = user.username || user.email.split("@")[0]
 
   // rating stats
@@ -75,14 +79,13 @@ export default async function UserProfile({ params }: { params: { username: stri
   const reviewsLink = `/user/${encodeURIComponent(params.username)}/reviews`
   const adminModerationLink = `/dashboard/admin/moderation?userId=${user.id}`
 
-  // Role badge: cuma 1 badge, sesuai role user
   const roleLabel = user.role === "admin" ? "Admin" : "Anggota"
   const roleBadgeClass =
     user.role === "admin"
-      ? "bg-primary/10 text-primary border-primary/20"
-      : "bg-yellow-500/10 text-yellow-400 border-yellow-500/20"
+      ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20"
+      : "bg-primary/10 text-primary border-primary/20"
 
-  const roleBadgeEl = (
+  const roleBadge = (
     <span
       className={`px-3 py-1 rounded-full text-xs font-bold border flex items-center gap-1 ${roleBadgeClass}`}
       title={isAdminViewer ? "Klik untuk moderasi user" : undefined}
@@ -92,60 +95,62 @@ export default async function UserProfile({ params }: { params: { username: stri
   )
 
   return (
-    <div className="min-h-screen bg-black text-white font-sans selection:bg-primary selection:text-black flex flex-col">
+    <div className="min-h-screen bg-black text-white flex flex-col">
       <main className="flex-grow pt-8 pb-12 px-6">
         <div className="max-w-5xl mx-auto">
           <div className="bg-[#1a1a1a] rounded-2xl p-8 border border-gray-800 mb-8">
             <div className="flex flex-col md:flex-row gap-8 items-start">
-              <div className="w-32 h-32 rounded-full bg-gray-700 flex-shrink-0 flex items-center justify-center text-5xl font-bold text-gray-400 border-4 border-[#121212] uppercase">
+              <div className="w-32 h-32 rounded-full bg-gray-700 flex items-center justify-center text-5xl font-bold text-gray-400 border-4 border-[#121212] uppercase">
                 {(user.username || user.email).charAt(0)}
               </div>
 
               <div className="flex-1">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                <div className="flex flex-col md:flex-row justify-between gap-4 mb-4">
                   <div>
-                    <h1 className="text-3xl font-bold text-white mb-1">{displayName}</h1>
-                    <p className="text-gray-400 text-lg">@{user.username || "user"}</p>
+                    <h1 className="text-3xl font-bold">{displayName}</h1>
+                    <p className="text-gray-400">@{user.username || "user"}</p>
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <div className="flex gap-2">
-                      {isAdminViewer ? (
-                        <Link href={adminModerationLink} className="hover:opacity-90">
-                          {roleBadgeEl}
-                        </Link>
-                      ) : (
-                        roleBadgeEl
-                      )}
-                    </div>
+                    {isAdminViewer ? (
+                      <Link href={adminModerationLink} className="hover:opacity-90">
+                        {roleBadge}
+                      </Link>
+                    ) : (
+                      roleBadge
+                    )}
 
-                    <ReportUserButton
-                      viewerId={viewerId}
-                      targetUserId={user.id}
-                      targetUsername={user.username}
-                    />
+                    {viewerId !== user.id && (
+                      <ReportUserButton
+                        viewerId={viewerId}
+                        targetUserId={user.id}
+                        targetUsername={user.username}
+                      />
+                    )}
                   </div>
                 </div>
 
-                <p className="text-gray-300 mb-4 max-w-2xl">{user.bio || "Belum ada bio."}</p>
+                <p className="text-gray-300 mb-4">
+                  {user.bio || "Belum ada bio."}
+                </p>
 
                 <div className="flex gap-4 mb-6">
-                  {user.socialLinks && (user.socialLinks as any).instagram && (
+                  {(user.socialLinks as any)?.instagram && (
                     <a
                       href={`https://instagram.com/${(user.socialLinks as any).instagram}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-gray-400 hover:text-[#E1306C] transition-colors text-sm"
+                      className="flex items-center gap-2 text-gray-400 hover:text-[#E1306C] text-sm"
                     >
                       <Instagram size={18} /> @{(user.socialLinks as any).instagram}
                     </a>
                   )}
-                  {user.socialLinks && (user.socialLinks as any).twitter && (
+                  {(user.socialLinks as any)?.twitter && (
                     <a
                       href={`https://twitter.com/${(user.socialLinks as any).twitter}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-gray-400 hover:text-[#1DA1F2] transition-colors text-sm"
+                      className="flex items-center gap-2 text-gray-400 hover:text-[#1DA1F2] text-sm"
                     >
                       <Twitter size={18} /> @{(user.socialLinks as any).twitter}
                     </a>
@@ -173,7 +178,7 @@ export default async function UserProfile({ params }: { params: { username: stri
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8">
               <div>
-                <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+                <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
                   <Film className="text-primary" /> Film Publikasi
                 </h2>
 
@@ -181,11 +186,11 @@ export default async function UserProfile({ params }: { params: { username: stri
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {user.movies.map((movie) => (
                       <Link
-                        href={`/movie/${movie.slug}`}
                         key={movie.id}
-                        className="bg-[#1a1a1a] p-4 rounded-xl border border-gray-800 hover:border-primary transition-colors group flex gap-4"
+                        href={`/movie/${movie.slug}`}
+                        className="bg-[#1a1a1a] p-4 rounded-xl border border-gray-800 hover:border-primary transition flex gap-4"
                       >
-                        <div className="w-16 h-24 bg-gray-800 rounded-lg flex-shrink-0 overflow-hidden relative">
+                        <div className="w-16 h-24 bg-gray-800 rounded-lg overflow-hidden relative">
                           {movie.posterUrl ? (
                             <Image src={movie.posterUrl} alt={movie.title} fill className="object-cover" />
                           ) : (
@@ -195,11 +200,11 @@ export default async function UserProfile({ params }: { params: { username: stri
                           )}
                         </div>
                         <div>
-                          <h3 className="font-bold text-white group-hover:text-primary transition-colors line-clamp-1">
-                            {movie.title}
-                          </h3>
-                          <p className="text-gray-400 text-sm mb-2">
-                            {movie.releaseDate ? new Date(movie.releaseDate).getFullYear() : "-"}
+                          <h3 className="font-bold line-clamp-1">{movie.title}</h3>
+                          <p className="text-gray-400 text-sm">
+                            {movie.releaseDate
+                              ? new Date(movie.releaseDate).getFullYear()
+                              : "-"}
                           </p>
                         </div>
                       </Link>
@@ -211,8 +216,8 @@ export default async function UserProfile({ params }: { params: { username: stri
               </div>
 
               <div>
-                <div className="flex items-center justify-between gap-4 mb-6">
-                  <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold flex items-center gap-2">
                     <MessageSquare className="text-primary" /> Ulasan Terbaru
                   </h2>
                   <Link href={reviewsLink} className="text-sm text-gray-400 hover:text-primary">
@@ -224,11 +229,11 @@ export default async function UserProfile({ params }: { params: { username: stri
                   {user.reviews.length > 0 ? (
                     user.reviews.map((review) => (
                       <div key={review.id} className="bg-[#1a1a1a] p-6 rounded-xl border border-gray-800">
-                        <div className="flex justify-between items-start mb-4">
+                        <div className="flex justify-between mb-4">
                           <div>
                             <Link
                               href={`/movie/${review.movie.slug}`}
-                              className="font-bold text-white text-lg hover:text-primary transition-colors"
+                              className="font-bold text-lg hover:text-primary"
                             >
                               {review.movie.title}
                             </Link>
@@ -236,13 +241,13 @@ export default async function UserProfile({ params }: { params: { username: stri
                               {new Date(review.createdAt).toLocaleDateString("id-ID")}
                             </p>
                           </div>
-
                           <div className="flex items-center gap-1 bg-yellow-500/10 text-yellow-500 px-2 py-1 rounded text-sm font-bold">
                             <Star size={14} fill="currentColor" /> {review.rating}
                           </div>
                         </div>
-
-                        <p className="text-gray-300 italic">&quot;{review.content || "Tidak ada komentar"}&quot;</p>
+                        <p className="text-gray-300 italic">
+                          "{review.content || "Tidak ada komentar"}"
+                        </p>
                       </div>
                     ))
                   ) : (
@@ -252,11 +257,9 @@ export default async function UserProfile({ params }: { params: { username: stri
               </div>
             </div>
 
-            <div className="space-y-6">
-              <Link href={reviewsLink} className="block">
-                <div className="hover:opacity-95 transition">
-                  <RatingStats ratingStats={ratingStats} totalRatings={totalRatings} />
-                </div>
+            <div>
+              <Link href={reviewsLink}>
+                <RatingStats ratingStats={ratingStats} totalRatings={totalRatings} />
               </Link>
             </div>
           </div>

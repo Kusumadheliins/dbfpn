@@ -23,41 +23,27 @@ export default function ReportUserButton({ viewerId, targetUserId, targetUsernam
       return
     }
 
-    const cleanReason = reason.trim()
-    if (!cleanReason) {
+    if (!reason.trim()) {
       setMsg("Alasan laporan tidak boleh kosong.")
       return
     }
 
     setLoading(true)
     try {
-      // FIX UTAMA: endpoint harus /api/reports, bukan /api/report
       const res = await fetch("/api/reports", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           targetType: "user",
           targetId: targetUserId,
-          reason: cleanReason,
+          reason: reason.trim(),
         }),
       })
 
-      let data: any = null
-      try {
-        data = await res.json()
-      } catch {
-        // kalau response bukan JSON, biarin
-      }
+      const data = await res.json().catch(() => null)
 
       if (!res.ok) {
-        // biar errornya jelas, bukan cuma "gagal"
-        const detail =
-          data?.error ||
-          data?.message ||
-          `Gagal mengirim laporan (HTTP ${res.status}).`
-
-        console.log("REPORT_FAILED", { status: res.status, data })
-        setMsg(detail)
+        setMsg(data?.error || `Gagal mengirim laporan (HTTP ${res.status})`)
         return
       }
 
@@ -65,7 +51,6 @@ export default function ReportUserButton({ viewerId, targetUserId, targetUsernam
       setOpen(false)
       setMsg("Laporan terkirim.")
     } catch (err: any) {
-      console.error("REPORT_EXCEPTION", err)
       setMsg(err?.message || "Gagal mengirim laporan.")
     } finally {
       setLoading(false)
@@ -75,15 +60,13 @@ export default function ReportUserButton({ viewerId, targetUserId, targetUsernam
   return (
     <>
       <button
-        type="button"
         onClick={() => {
           setMsg(null)
           setOpen(true)
         }}
-        className="px-3 py-2 rounded-lg bg-[#252525] hover:bg-[#333] border border-gray-700 text-white text-sm flex items-center gap-2"
+        className="px-3 py-2 rounded-lg bg-[#252525] hover:bg-[#333] border border-gray-700 text-sm flex items-center gap-2"
       >
-        <Flag size={16} />
-        Laporkan
+        <Flag size={16} /> Laporkan
       </button>
 
       {open && (
@@ -92,32 +75,25 @@ export default function ReportUserButton({ viewerId, targetUserId, targetUsernam
             <div className="text-lg font-bold">
               Laporkan {targetUsername || `User#${targetUserId}`}
             </div>
-            <div className="text-gray-400 text-sm mt-1">
-              Tulis alasan laporan, singkat tapi jelas.
-            </div>
 
             <textarea
-              className="mt-4 w-full min-h-[110px] rounded-xl bg-black/30 border border-gray-700 p-3 text-white outline-none"
+              className="mt-4 w-full min-h-[110px] rounded-xl bg-black/30 border border-gray-700 p-3 outline-none"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="Contoh: spam, penipuan, toxic, dll"
               disabled={loading}
             />
 
             {msg && <div className="mt-3 text-sm text-gray-300">{msg}</div>}
 
-            <div className="mt-5 flex items-center justify-end gap-2">
+            <div className="mt-5 flex justify-end gap-2">
               <button
-                type="button"
                 onClick={() => setOpen(false)}
-                className="px-3 py-2 rounded-lg bg-transparent border border-gray-700 text-white text-sm"
+                className="px-3 py-2 rounded-lg border border-gray-700 text-sm"
                 disabled={loading}
               >
                 Batal
               </button>
-
               <button
-                type="button"
                 onClick={submit}
                 className="px-3 py-2 rounded-lg bg-primary text-black font-bold text-sm disabled:opacity-60"
                 disabled={loading}
