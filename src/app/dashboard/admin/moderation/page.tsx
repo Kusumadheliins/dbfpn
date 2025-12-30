@@ -1,4 +1,3 @@
-import DashboardLayout from "@/components/dashboard/DashboardLayout"
 import ModerationContent from "./ModerationContent"
 import { auth } from "@/auth"
 import prisma from "@/lib/prisma"
@@ -10,8 +9,8 @@ export default async function AdminModeration() {
     })
 
     return (
-        <DashboardLayout user={user}>
+        <>
             <ModerationContent />
-        </DashboardLayout>
+        </>
     )
 }

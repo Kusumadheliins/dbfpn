@@ -1,4 +1,3 @@
-import DashboardLayout from "@/components/dashboard/DashboardLayout"
 import { User, Clock, Star, Film } from "lucide-react"
 import { auth } from "@/auth"
 import prisma from "@/lib/prisma"
@@ -10,7 +9,7 @@ export default async function UserDashboard() {
 
     if (!user) return null
 
-    // Fetch user stats
+    // Fetch user stats and data
     const [
         reviewsCount,
         watchlistCount,
@@ -37,7 +36,7 @@ export default async function UserDashboard() {
     })
 
     return (
-        <DashboardLayout user={dbUser}>
+        <>
             <h1 className="text-3xl font-bold text-white mb-8">Ringkasan</h1>
 
             {/* Profile Card */}
@@ -105,7 +104,7 @@ export default async function UserDashboard() {
                                     </div>
                                     <div>
                                         <p className="text-white">
-                                            Anda memberikan rating <span className="font-bold text-yellow-500">{review.rating}/10</span> untuk film <Link href={`/movie/${review.movie.slug}`} className="text-primary hover:underline">{review.movie.title}</Link>
+                                            Anda memberikan rating <span className="font-bold text-yellow-500">{review.rating}/5</span> untuk film <Link href={`/movie/${review.movie.slug}`} className="text-primary hover:underline">{review.movie.title}</Link>
                                         </p>
                                         <p className="text-gray-500 text-sm mt-1">{new Date(review.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
                                         {review.content && (
@@ -122,6 +121,6 @@ export default async function UserDashboard() {
                     )}
                 </div>
             </div>
-        </DashboardLayout>
+        </>
     )
 }

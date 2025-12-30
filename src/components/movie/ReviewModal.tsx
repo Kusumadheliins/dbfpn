@@ -65,8 +65,8 @@ export default function ReviewModal({ isOpen, onClose, movieTitle, initialRating
                     </p>
 
                     {/* Star Rating */}
-                    <div className="flex justify-center gap-2 mb-8">
-                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((star) => (
+                    <div className="flex justify-center gap-3 mb-8">
+                        {[1, 2, 3, 4, 5].map((star) => (
                             <button
                                 key={star}
                                 type="button"
@@ -76,7 +76,7 @@ export default function ReviewModal({ isOpen, onClose, movieTitle, initialRating
                                 className="transition-transform hover:scale-110 focus:outline-none"
                             >
                                 <Star
-                                    size={28}
+                                    size={36}
                                     className={`${star <= (hoverRating || rating)
                                         ? "fill-yellow-500 text-yellow-500"
                                         : "text-gray-600"
@@ -89,7 +89,7 @@ export default function ReviewModal({ isOpen, onClose, movieTitle, initialRating
                     {/* Rating Value Display */}
                     <div className="text-center mb-6">
                         <span className="text-3xl font-bold text-white">{(hoverRating || rating)}</span>
-                        <span className="text-gray-500 text-lg">/10</span>
+                        <span className="text-gray-500 text-lg">/5</span>
                     </div>
 
                     {/* Review Textarea */}

@@ -5,13 +5,14 @@ import prisma from "@/lib/prisma"
 import { notFound } from "next/navigation"
 import RatingStats from "@/components/user/RatingStats"
 
-export default async function UserProfile({ params }: { params: { username: string } }) {
+export default async function UserProfile({ params }: { params: Promise<{ username: string }> }) {
+    const { username } = await params
     // 1. Fetch User Data
     const user = await prisma.user.findFirst({
         where: {
             OR: [
-                { username: params.username },
-                { id: !isNaN(Number(params.username)) ? Number(params.username) : undefined }
+                { username: username },
+                { id: !isNaN(Number(username)) ? Number(username) : undefined }
             ]
         },
         include: {
@@ -51,7 +52,7 @@ export default async function UserProfile({ params }: { params: { username: stri
         select: { rating: true }
     })
 
-    const ratingStats: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0 }
+    const ratingStats: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
     allRatings.forEach(r => {
         if (ratingStats[r.rating] !== undefined) ratingStats[r.rating]++
     })

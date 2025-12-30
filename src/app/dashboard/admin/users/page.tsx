@@ -1,6 +1,5 @@
 "use client"
 
-import DashboardLayout from "@/components/dashboard/DashboardLayout"
 import { Search, Filter, MoreHorizontal, Shield, Ban, CheckCircle, Edit, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { useToast } from "@/components/ui/Toast"
@@ -30,7 +29,7 @@ export default function AdminUsers() {
     ]
 
     return (
-        <DashboardLayout>
+        <>
             <h1 className="text-3xl font-bold text-white mb-8">Manajemen Pengguna</h1>
 
             {/* Search and Filter Bar */}
@@ -141,6 +140,6 @@ export default function AdminUsers() {
             {activeMenu !== null && (
                 <div className="fixed inset-0 z-40 bg-transparent" onClick={() => setActiveMenu(null)}></div>
             )}
-        </DashboardLayout>
+        </>
     )
 }
